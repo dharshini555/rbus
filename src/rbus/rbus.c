@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-
+#include "rdk_otlp_instrumentation.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -3492,19 +3492,23 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
 
     VERIFY_NULL(handleInfo);
 
-    if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
-        return RBUS_ERROR_INVALID_HANDLE;
-
+    rdk_otlp_start_child_span(name, "rbus_get_function");
+    if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR){
+       rdk_otlp_finish_child_span();
+         return RBUS_ERROR_INVALID_HANDLE;
+    }
     /* Is it a valid Query */
     if (!_is_valid_get_query(name))
     {
         RBUSLOG_WARN("This method is only to get Parameters");
+	rdk_otlp_finish_child_span();
         return RBUS_ERROR_INVALID_INPUT;
     }
 
     if (_is_wildcard_query(name))
     {
         RBUSLOG_WARN("This method does not support wildcard query");
+	rdk_otlp_finish_child_span();
         return RBUS_ERROR_ACCESS_NOT_ALLOWED;
     }
 
@@ -3575,6 +3579,7 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
         }
         rbusMessage_Release(response);
     }
+    rdk_otlp_finish_child_span();
     return errorcode;
 }
 
@@ -3649,8 +3654,11 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
     VERIFY_NULL(retProperties);
     VERIFY_ZERO(paramCount);
 
-    if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
-        return RBUS_ERROR_INVALID_HANDLE;
+    rdk_otlp_start_child_span(pParamNames[0], "rbus_getExt_function");
+    if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR){
+       rdk_otlp_finish_child_span();
+       return RBUS_ERROR_INVALID_HANDLE;
+    }
 
     if ((1 == paramCount))
     {
@@ -3676,6 +3684,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
             {
                 RBUSLOG_ERROR("Failed to get the data. Error : %d", errorcode);
             }
+	    rdk_otlp_finish_child_span();
             return errorcode;
         }
         else
@@ -3774,10 +3783,12 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                     if ((*retProperties != NULL) && (errorcode != RBUS_ERROR_SUCCESS))
                     {
                         RBUSLOG_WARN("Query for expression %s was partially successful", pParamNames[0]);
+			rdk_otlp_finish_child_span();
                         return RBUS_ERROR_SUCCESS;
                     }
                     else
                     {
+			rdk_otlp_finish_child_span();
                         return errorcode;
                     }
                 }
@@ -3785,6 +3796,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
             else
             {
                 RBUSLOG_DEBUG("Query for expression %s was not successful.", pParamNames[0]);
+		rdk_otlp_finish_child_span();
                 return RBUS_ERROR_ELEMENT_DOES_NOT_EXIST;
             }
         }
@@ -3818,6 +3830,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
             if(errorcode == RBUS_ERROR_INVALID_INPUT)
             {
                 free(componentNames);
+		rdk_otlp_finish_child_span();
                 return RBUS_ERROR_INVALID_INPUT;
             }
 
@@ -3917,6 +3930,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
         if(componentNames)
             free(componentNames);
     }
+    rdk_otlp_finish_child_span();
     return errorcode;
 }
 

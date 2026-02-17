@@ -42,8 +42,11 @@ add_library(
     rbus_asyncsubscribe.c
     rbus_intervalsubscription.c)
 
-target_link_libraries(rbus rbuscore rtMessage -fPIC -pthread)
-
+target_link_libraries(rbus rbuscore rtMessage -fPIC -pthread rdk_otlp)                       
+                                                                                             
+# Add the path to librdk_otlp.so if not in a standard location                               
+link_directories("${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/.libs")                    
+                                                                                             
 target_include_directories (rbus PUBLIC ${RDKLOGGER_INCLUDE_DIRS})
 
 set_target_properties(rbus
