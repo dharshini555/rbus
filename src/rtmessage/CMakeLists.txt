@@ -18,6 +18,10 @@
 ##########################################################################
 
 set(OPENSSL_REQUIRED FALSE)
+include_directories(${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/include)
+
+# Add link directory for librdk_otlp
+link_directories(${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/.libs)
 
 if (WITH_SPAKE2)
   message("spake2 enabled")
