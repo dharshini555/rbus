@@ -24,11 +24,9 @@ include_directories(${PROJECT_SOURCE_DIR}/src/rtmessage)
 include_directories(${PROJECT_SOURCE_DIR}/src/core)
 include_directories(${PROJECT_SOURCE_DIR}/src/session_manager)
 include_directories(${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/include)
-include_directories(/usr/local/include)
 
 # Add link directories for librdk_otlp
 link_directories(${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/.libs)
-link_directories(/usr/local/lib)
 
 add_library(
     rbus
@@ -48,21 +46,8 @@ add_library(
     rbus_asyncsubscribe.c
     rbus_intervalsubscription.c)
 
-# Find librdk_otlp explicitly
-find_library(RDK_OTLP_LIB NAMES rdk_otlp PATHS /usr/local/lib ${CMAKE_SOURCE_DIR}/../rdk_otel_instrumentation/.libs REQUIRED)
-message(STATUS "Found librdk_otlp at: ${RDK_OTLP_LIB}")
-
 # Link libraries - use full path to ensure proper linking
-target_link_libraries(rbus PUBLIC rbuscore rtMessage pthread ${RDK_OTLP_LIB})
-
-# Force linking with --no-as-needed to prevent linker from removing the library
-target_link_options(rbus PRIVATE "-Wl,--no-as-needed")
-
-# Add RPATH so librdk_otlp.so can be found at runtime
-set_target_properties(rbus PROPERTIES
-    INSTALL_RPATH "/usr/local/lib"
-    BUILD_WITH_INSTALL_RPATH TRUE
-    LINK_WHAT_YOU_USE TRUE)
+target_link_libraries(rbus PUBLIC rbuscore rtMessage pthread rdk_otlp)
 
 target_include_directories (rbus PUBLIC ${RDKLOGGER_INCLUDE_DIRS})
 
