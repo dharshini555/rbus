@@ -2973,16 +2973,8 @@ rbusError_t rbus_open(rbusHandle_t* handle, char const* componentName)
 
     // Initialize OTLP tracer once for the rbus library
     if (!otlp_initialized) {
-        printf("🔧 [RBUS] Initializing OTLP tracer for rbus library...\n");
-        fflush(stdout);
         rdk_otlp_init("rbus-library", "2.0.0");
         otlp_initialized = true;
-        printf("✅ [RBUS] OTLP tracer initialized successfully\n");
-        fflush(stdout);
-        RBUSLOG_INFO("OTLP tracer initialized for rbus library");
-    } else {
-        printf("ℹ️ [RBUS] OTLP tracer already initialized\n");
-        fflush(stdout);
     }
 
     LockMutex();
@@ -3508,19 +3500,11 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
     VERIFY_NULL(handleInfo);
     
     // DEBUG: Explicit logging to prove function is called
-    printf("🔍 [RBUS] rbus_get() called for parameter: %s\n", name);
-    fflush(stdout);
     
     // Start child span (links to parent via shared memory)
-    printf("🔍 [RBUS] About to call rdk_otlp_start_child_span() for: %s\n", name);
-    fflush(stdout);
     rdk_otlp_start_child_span(name, "rbus_get");
-    printf("🔍 [RBUS] Returned from rdk_otlp_start_child_span()\n");
-    fflush(stdout);
     
     if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR){
-       printf("🔍 [RBUS] Invalid handle type, finishing child span\n");
-       fflush(stdout);
        rdk_otlp_finish_child_span();
          return RBUS_ERROR_INVALID_HANDLE;
     }
@@ -3607,12 +3591,7 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
         rbusMessage_Release(response);
     }
     
-    printf("🔍 [RBUS] About to finish child span for: %s, errorcode=%d\n", name, errorcode);
-    fflush(stdout);
     rdk_otlp_finish_child_span();
-    printf("🔍 [RBUS] Child span finished, returning from rbus_get()\n");
-    fflush(stdout);
-    
     return errorcode;
 }
 
